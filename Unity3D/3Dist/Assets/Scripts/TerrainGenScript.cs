@@ -229,6 +229,10 @@ public class TerrainGenScript : MonoBehaviour
     }
 
     /**
+
+     * Deprecated - Connecting interpolated points inside triangles can only estimate distance
+     * while we want to calculate exact distance across the surface of triangles
+     * 
      * Helper Function that Interpolate 3D Coordinate Between Grid Vertices
 
      * Since we treated the terrain surface as a triangular grid derived from the height map.
@@ -276,6 +280,52 @@ public class TerrainGenScript : MonoBehaviour
 
         // Interpolation
         return u * vs[0].y + v * vs[1].y + w * vs[2].y;
+    }
+
+
+    /** 
+     * Helper Function that Interpolate Height on The Grid Line
+
+     * There are three types of grid lines on the surface:
+     * 1. Horizontal Grid Line
+     * 2. Vertical Grid Line
+     * 3. Diagonal Grid Line
+
+     * For each grid line, the function uses different vertices to interpolate: (x,y) refer to top left vertex
+     * 1. (x, y) - (x + 1, y)
+     * 2. (x, y) - (x, y + 1)
+     * 3. (x + 1, y) - (x, y + 1)
+
+     * @param gridX x coordinate on Grid
+     * @param gridY y coordinate on Grid
+     * @param mode mode of interpolation: 
+            0-Horizontal, 1-Veritcal, 2-Diagonal
+     
+     * @returns interpolated Height of given position
+        
+    */
+    private float InterpHeightOnGrid(float gridX, float gridY, int mode = 0) {
+        Vector2Int topLeftVertPos = new Vector2Int((int) gridX, (int) gridY);
+        Vector2 posInCell = new Vector2(gridX - topLeftVertPos.x, gridY - topLeftVertPos.y);
+
+        float heightStart, heightEnd;
+        if (mode == 0) {
+            heightStart = currentMap[topLeftVertPos.x, topLeftVertPos.y];
+            heightEnd = currentMap[topLeftVertPos.x + 1, topLeftVertPos.y];
+            return heightStart + posInCell.x * (heightEnd - heightStart);
+        } else if (mode == 1) {
+            heightStart = currentMap[topLeftVertPos.x, topLeftVertPos.y];
+            heightEnd = currentMap[topLeftVertPos.x, topLeftVertPos.y + 1];
+            return heightStart + posInCell.y * (heightEnd - heightStart);
+        } else if (mode == 2) {
+            //Debug.Log(topLeftVertPos.x + "," + (topLeftVertPos.y + 1));
+            heightStart = currentMap[topLeftVertPos.x, topLeftVertPos.y + 1];
+            heightEnd = currentMap[topLeftVertPos.x + 1, topLeftVertPos.y];
+            return heightStart + posInCell.x * (heightEnd - heightStart);
+        } else {
+            return -1f;
+        }
+        
     }
 
     /**
