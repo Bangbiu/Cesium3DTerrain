@@ -7,6 +7,7 @@ public class TipScript : MonoBehaviour
 {
     public GameObject target;
     public GameObject textBox;
+    public GameObject pointPrefab;
 
     public Vector2Int gridPos;
     // Start is called before the first frame update
