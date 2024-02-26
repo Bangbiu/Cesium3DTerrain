@@ -298,15 +298,23 @@ public class TerrainGenScript : MonoBehaviour
 
      * @param gridX x coordinate on Grid
      * @param gridY y coordinate on Grid
-     * @param mode mode of interpolation: 
-            0-Horizontal, 1-Veritcal, 2-Diagonal
+     *      - mode of interpolation: 0-Horizontal, 1-Veritcal, 2-Diagonal
      
      * @returns interpolated Height of given position
         
     */
-    private float InterpHeightOnGrid(float gridX, float gridY, int mode = 0) {
+    private float InterpHeightOnGrid(float gridX, float gridY) {
         Vector2Int topLeftVertPos = new Vector2Int((int) gridX, (int) gridY);
         Vector2 posInCell = new Vector2(gridX - topLeftVertPos.x, gridY - topLeftVertPos.y);
+
+        int mode = 0;
+        if (posInCell.y == 0f)  {
+            mode = 0;
+        } else if (posInCell.x == 0f) {
+            mode = 1;
+        } else {
+            mode = 2;
+        }
 
         float heightStart, heightEnd;
         if (mode == 0) {
@@ -350,7 +358,7 @@ public class TerrainGenScript : MonoBehaviour
 
         foreach(Vector2 kp in keypoints) {
             Vector2 worldGridPos = GridToMeshGrid(kp.x, kp.y);
-            float height = InterpolateHeight(worldGridPos);
+            float height = InterpHeightOnGrid(kp.x, kp.y);
             worldPoses.Add(new Vector3(worldGridPos.x, height * heightScale, worldGridPos.y));
             actualPoses.Add(GetActualPos(kp.x, height, kp.y));
         }
@@ -381,7 +389,78 @@ public class TerrainGenScript : MonoBehaviour
      * @returns list of coordinates of Keypoints on Grid
      */
     public List<Vector2> GenerateSurfacePath(Vector2Int pointA, Vector2Int pointB) {
-        List<Vector2> result = new List<Vector2>();
-        return result;
+        List<Vector2> keypoints = new List<Vector2>();
+
+        if (pointA == pointB) {
+            keypoints.Add(new Vector2(0, 0));
+            keypoints.Add(new Vector2(0, 0));
+            return keypoints;
+        }
+
+        // y = slope * x + pb;
+        float dy = pointB.y - pointA.y;
+        float dx = pointB.x - pointA.x + 0.0000001f; // Small Amount to avoid Infinity
+        float slope = dy / dx;
+        float pb = - slope * pointB.x + pointB.y;
+        Debug.Log(slope);
+
+        // Diagnal Intersections: y = -x + gb (point.x + point.y)
+        int gb1 = pointA.x + pointA.y;
+        int gb2 = pointB.x + pointB.y;
+
+        int gbStart = Mathf.Min(gb1, gb2) + 1;
+        int gbEnd = Mathf.Max(gb1, gb2);
+
+        
+        for (int gb = gbStart; gb < gbEnd; gb ++) {
+            float isectX = (gb - pb) / (slope + 1f);
+            float isectY = -isectX + gb;
+            
+            if (float.IsNaN(isectX) || float.IsNaN(isectY)) {
+                continue;
+            }
+            keypoints.Add(new Vector2(isectX, isectY));
+        }
+
+        // Orthogonal Intersections
+        int startX = Mathf.Min(pointA.x, pointB.x) + 1;
+        int EndX = Mathf.Max(pointA.x, pointB.x);
+
+        // Vertical Grid Line: x = b
+        for (int lx = startX; lx < EndX; lx++) {
+            float isectY = slope * lx + pb;
+            float isectX = (float) lx;
+
+            if (float.IsNaN(isectX) || float.IsNaN(isectY)) {
+                continue;
+            }
+
+            keypoints.Add(new Vector2(isectX, isectY));
+        }
+
+        // Vertical Grid Line: y = b
+        int startY = Mathf.Min(pointA.y, pointB.y) + 1;
+        int EndY = Mathf.Max(pointA.y, pointB.y);
+        
+        for (int ly = startY; ly < EndY; ly++) {
+            float isectY = (float) ly;
+            float isectX = (ly - pb) / slope;
+
+            if (float.IsNaN(isectX) || float.IsNaN(isectY)) {
+                continue;
+            }
+
+            keypoints.Add(new Vector2(isectX, isectY));
+            
+        }
+
+        // Add Two Starting Points To the Path
+        keypoints.Add(new Vector2(pointA.x, pointA.y));
+        keypoints.Add(new Vector2(pointB.x, pointB.y));
+
+        // Sort keypoints using one of the component
+        keypoints.Sort((a, b) => a.x < b.x ? -1 : 1);
+
+        return keypoints;
     }
 }
