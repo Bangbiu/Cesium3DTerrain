@@ -308,6 +308,10 @@ public class TerrainGenScript : MonoBehaviour
         Vector2 posInCell = new Vector2(gridX - topLeftVertPos.x, gridY - topLeftVertPos.y);
 
         int mode = 0;
+        if (posInCell.y == 0f && posInCell.x == 0f) {
+            return currentMap[topLeftVertPos.x, topLeftVertPos.y];
+        }
+        
         if (posInCell.y == 0f)  {
             mode = 0;
         } else if (posInCell.x == 0f) {
