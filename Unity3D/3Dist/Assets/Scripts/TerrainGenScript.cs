@@ -31,6 +31,7 @@ public class TerrainGenScript : MonoBehaviour
     }
 
     public GameObject PinpointTipPrefab;
+    public GameObject TracePointPrefab;
     public GameObject uiObject;
 
     public static int MAP_SIZE = 512;
@@ -46,12 +47,13 @@ public class TerrainGenScript : MonoBehaviour
     private float _heightScale = 0.01f;
 
     private GameObject[] pinpoints;
+    private List<GameObject> tracePoints;
     private UIScript ui;
 
     // Start is called before the first frame update
     void Start()
     {
-        InitPin();
+        InitHints();
         InitUI();
         LoadMap(0);
     }
@@ -96,15 +98,21 @@ public class TerrainGenScript : MonoBehaviour
                 Pinpoint(ts.gridPos, i);
             }
         }
+
+        if (pinpoints[0].activeSelf && pinpoints[1].activeSelf) {
+            ShowSurfacePath();
+        }
     }
 
-    public void InitPin() {
+    public void InitHints() {
         pinpoints = new GameObject[2];
         pinpoints[0] = Instantiate(PinpointTipPrefab) as GameObject;
         pinpoints[1] = Instantiate(PinpointTipPrefab) as GameObject;
 
         pinpoints[0].SetActive(false);
         pinpoints[1].SetActive(false);
+
+        tracePoints = new List<GameObject>();
     }
 
     public void InitUI() {
@@ -148,6 +156,11 @@ public class TerrainGenScript : MonoBehaviour
 
     }
 
+    private Vector2 GridToMeshGrid(float gridX, float gridY) {
+        return new Vector2(gridX / MAP_SIZE * TERR_WIDTH  * TERR_SCALE - OFFSET_X,
+                            gridY / MAP_SIZE * TERR_HEIGHT  * TERR_SCALE - OFFSET_Z);
+    }
+
     private Vector3 GetMeshVertPos(Vector2Int gridPos) {
         return GetMeshVertPos((float)gridPos.x / MAP_SIZE * TERR_WIDTH, (float)gridPos.y / MAP_SIZE * TERR_HEIGHT);
     }
@@ -165,8 +178,12 @@ public class TerrainGenScript : MonoBehaviour
     }
 
     private Vector3 GetActualPos(int x, int z) {
+        return GetActualPos(x, currentMap[x, z], z);
+    }
+
+    private Vector3 GetActualPos(float x, float y, float z) {
         // The heightmap has a spatial resolution of 30 meters per pixel and 11 meters per height value.
-        return new Vector3(x * 30f,  currentMap[x, z]* 11f, z * 30f);
+        return new Vector3(x * 30f,  y* 11f, z * 30f);
     }
 
     private Mesh GenerateTerrain() {
@@ -209,5 +226,80 @@ public class TerrainGenScript : MonoBehaviour
         terrain.RecalculateNormals();
 
         return terrain;
+    }
+
+    /**
+     * Helper Function that Interpolate 3D Coordinate Between Grid Vertices
+
+     * Since we treated the terrain surface as a triangular grid derived from the height map.
+     * -- The Quad is split from TOP_RIGHT to BOTTOM_LEFT
+     * We can linearly interpolate height between grid vertices using point coordinate inside triangle.
+
+     * @param pointA target 1 Coordinate on Grid 
+     * @param pointB target 2 Coordinate on Grid 
+     * @returns list of coordinates of Keypoints on Grid
+
+    */
+
+    private float InterpolateHeight(Vector2 pos) {
+        float result = 0f;
+        return result;
+    }
+
+    /**
+        Render The Path between Two Tracked Points
+    */
+    public void ShowSurfacePath() {
+
+        foreach(GameObject tp in tracePoints) {
+            Destroy(tp);
+        }
+        tracePoints.Clear();
+
+        TipScript ts1 = pinpoints[0].GetComponent<TipScript>();
+        TipScript ts2 = pinpoints[1].GetComponent<TipScript>();
+
+        Debug.Log("ts1:" + ts1.gridPos + ", ts2:" + ts2.gridPos);
+
+
+        List<Vector2> keypoints = GenerateSurfacePath(ts1.gridPos, ts2.gridPos);
+        List<Vector3> worldPoses = new List<Vector3>();
+        List<Vector3> actualPoses = new List<Vector3>();
+
+        foreach(Vector2 kp in keypoints) {
+            Vector2 worldGridPos = GridToMeshGrid(kp.x, kp.y);
+            float height = InterpolateHeight(worldGridPos);
+            worldPoses.Add(new Vector3(worldGridPos.x, height * heightScale, worldGridPos.y));
+            actualPoses.Add(GetActualPos(kp.x, height, kp.y));
+        }
+
+
+        foreach(Vector3 pos in worldPoses) {
+            GameObject tp = Instantiate(TracePointPrefab) as GameObject;
+            tp.transform.position = pos;
+            tracePoints.Add(tp);
+        }
+
+        
+        float totalLength = 0f;
+
+        for (int i = 0; i < actualPoses.Count - 1; i++) {
+            totalLength += (actualPoses[i] - actualPoses[i + 1]).magnitude;
+        }
+
+        ui.setCalcResult(totalLength);
+
+        //return totalLength;
+    }
+
+    /**
+     * Generate Surface Path Keypoints Between Two Points
+     * @param pointA target 1 Coordinate on Grid 
+     * @param pointB target 2 Coordinate on Grid 
+     * @returns list of coordinates of Keypoints on Grid
+     */
+    public List<Vector2> GenerateSurfacePath(Vector2Int pointA, Vector2Int pointB) {
+        List<Vector2> result = new List<Vector2>();
+        return result;
     }
 }

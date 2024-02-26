@@ -8,6 +8,7 @@ public class UIScript : MonoBehaviour
 {
     [SerializeField]
     public GameObject[] targetInputs;
+    public GameObject distDisp;
 
     public GameObject terrainObject;
 
@@ -66,6 +67,10 @@ public class UIScript : MonoBehaviour
         // Update Tip
         //Debug.Log(getInputPosition(index));
         terrain.Pinpoint(getInputPosition(index), index);
+    }
+
+    public void setCalcResult(float length) {
+        distDisp.GetComponent<TextMeshProUGUI>().text = length.ToString() + " m";
     }
 
 

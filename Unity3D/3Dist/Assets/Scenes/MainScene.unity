@@ -2365,7 +2365,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 769952691}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1090651909}
+        m_TargetAssemblyTypeName: TerrainGenScript, Assembly-CSharp
+        m_MethodName: ShowSurfacePath
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &769952691
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2688,6 +2700,7 @@ MonoBehaviour:
   TERR_SCALE: 0.05
   ORIGIN_OFFSET: 0.5
   PinpointTipPrefab: {fileID: 1894506906946398014, guid: b13acf65f50c8954080df17a678de039, type: 3}
+  TracePointPrefab: {fileID: 2616774207956238526, guid: 823219b69c2203b42b46f187385237bd, type: 3}
   uiObject: {fileID: 1658405808}
   HEIGHT_MAPS:
   - {fileID: 4900000, guid: b5470d8d00c1e1e4aafe931256788641, type: 3}
@@ -3602,7 +3615,7 @@ GameObject:
   - component: {fileID: 1562226967}
   - component: {fileID: 1562226966}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: DistanceDisplayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4439,6 +4452,7 @@ MonoBehaviour:
   targetInputs:
   - {fileID: 1800298015}
   - {fileID: 1900297505}
+  distDisp: {fileID: 1562226964}
   terrainObject: {fileID: 1090651904}
 --- !u!1 &1719262004
 GameObject:
