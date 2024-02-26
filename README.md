@@ -1,17 +1,27 @@
 # Cesium3DTerrain
 ## Instruction
-Rotate Camera: Drag with RMB
-Zoom: Mouse Wheel
-Pin: LMB
+Rotate Camera
+------------
+Drag with RMB
 
-Map can be loaded by select the file in the dropdown box.
+Zoom
+------------
+Mouse Wheel
+
+Pin
+------------
+LMB
+
+Load Map
 ------------
 <img src="Demo_Image\dropdownbox.png">
+Map can be loaded by select the file in the dropdown box.
 
-The Coordinate can be input by textbox.
-Use Pin on the terrain will change the coordinate of selected target (Yellow Entry is selected).
+Input The Coordinate
 ------------
 <img src="Demo_Image\target_picking.png">
+Input The Coordinate can be input by textbox
+Use Pin on the terrain will change the coordinate of selected target (Yellow Entry is selected).
 
 Distance will be automatically calculated when two targets are present.
 
