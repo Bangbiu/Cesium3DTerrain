@@ -235,15 +235,47 @@ public class TerrainGenScript : MonoBehaviour
      * -- The Quad is split from TOP_RIGHT to BOTTOM_LEFT
      * We can linearly interpolate height between grid vertices using point coordinate inside triangle.
 
-     * @param pointA target 1 Coordinate on Grid 
-     * @param pointB target 2 Coordinate on Grid 
-     * @returns list of coordinates of Keypoints on Grid
+     * @param pos position on the Grid
+     * @returns interpolated Height of given position
 
     */
 
     private float InterpolateHeight(Vector2 pos) {
-        float result = 0f;
-        return result;
+        Vector2Int topLeftVertPos = new Vector2Int((int) pos.x, (int) pos.y);
+        Vector2 posInCell = pos - topLeftVertPos;
+
+        // Four Vertices in the Quad
+        
+        // Top Left
+        Vector3 v1 = new Vector3(0, currentMap[topLeftVertPos.x, topLeftVertPos.y], 0);
+        
+        // Top Right
+        Vector3 v2 = new Vector3(1, currentMap[topLeftVertPos.x + 1, topLeftVertPos.y],0);
+
+        // Bottom Left
+        Vector3 v3 = new Vector3(0, currentMap[topLeftVertPos.x, topLeftVertPos.y + 1], 1);
+
+        // Bottom Right
+        Vector3 v4 = new Vector3(1, currentMap[topLeftVertPos.x + 1, topLeftVertPos.y + 1], 1);
+
+        // Inside Top Left Triangle
+        Vector3[] vs = {v1, v2, v3};
+
+        if (posInCell.y < posInCell.x) {
+            // Inside Bottom Right Triangle
+            vs[0] = v2;
+            vs[1] = v3;
+            vs[2] = v4;
+        }
+
+        // Calculate barycentric coordinates
+        float denom = (vs[1].z - vs[2].z) * (vs[0].x - vs[2].x) + (vs[2].x - vs[1].x) * (vs[0].z - vs[2].z);
+        float u = ((vs[1].z - vs[2].z) * (posInCell.x - vs[2].x) + (vs[2].x - vs[1].x) * (posInCell.y - vs[2].z)) / denom;
+        float v = ((vs[2].z - vs[0].z) * (posInCell.x - vs[2].x) + (vs[0].x - vs[2].x) * (posInCell.y - vs[2].z)) / denom;
+        float w = 1 - u - v;
+
+        // Interpolation
+        return u * vs[0].y + v * vs[1].y + w * vs[2].y;
     }
 
     /**
