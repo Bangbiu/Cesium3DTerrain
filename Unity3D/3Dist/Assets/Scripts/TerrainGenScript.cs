@@ -378,8 +378,6 @@ public class TerrainGenScript : MonoBehaviour
         }
 
         ui.setCalcResult(totalLength);
-
-        //return totalLength;
     }
 
     /**
@@ -399,10 +397,19 @@ public class TerrainGenScript : MonoBehaviour
 
         // y = slope * x + pb;
         float dy = pointB.y - pointA.y;
-        float dx = pointB.x - pointA.x + 0.0000001f; // Small Amount to avoid Infinity
+        float dx = pointB.x - pointA.x; // Maybe Small Amount to avoid Infinity
         float slope = dy / dx;
         float pb = - slope * pointB.x + pointB.y;
-        Debug.Log(slope);
+        Debug.Log("slope: " + slope);
+
+        if (dx == 0f) {
+            int minY = Mathf.Min(pointA.y, pointB.y);
+            int maxY = Mathf.Max(pointA.y, pointB.y);
+            for (int gy = minY; gy <= maxY; gy++) {
+                keypoints.Add(new Vector2(pointA.x, gy));
+            }
+            return keypoints;
+        }
 
         // Diagnal Intersections: y = -x + gb (point.x + point.y)
         int gb1 = pointA.x + pointA.y;
