@@ -134,6 +134,11 @@ public class TerrainGenScript : MonoBehaviour
         // Change User Input Coordinate
         ui.setInputPosition(gridPos.x, gridPos.y);
 
+        //Calc Path
+        if (pinpoints[0].activeSelf && pinpoints[1].activeSelf) {
+            ShowSurfacePath();
+        }
+
         return pinpoint;
 
     } 
@@ -151,6 +156,11 @@ public class TerrainGenScript : MonoBehaviour
         Vector3 actPos = GetActualPos(gridPos.x, gridPos.y);
         Vector3 worldPos = GetMeshVertPos(gridPos);
         ts.Tip(worldPos, gridPos, actPos.y + " m");
+
+        //Calc Path
+        if (pinpoints[0].activeSelf && pinpoints[1].activeSelf) {
+            ShowSurfacePath();
+        }
 
         return pinpoint;
 
